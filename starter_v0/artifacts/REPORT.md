@@ -8,7 +8,7 @@
 
 - Team:
 - Members:
-- Provider/model:
+- Provider/model: DeepSeek / deepseek-v4-flash
 
 ---
 
@@ -16,41 +16,45 @@
 
 ## A1. Agent này làm được gì
 
-> 1–2 câu mô tả agent dùng để làm gì.
-
-Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc URL và tổng hợp thành digest."
+Research agent dùng để tìm tin web, tìm/tóm tắt tweet theo tài khoản hoặc chủ đề, đọc URL cụ thể, làm sạch nguồn trùng lặp và tổng hợp thành digest có trace tool.
 
 **Link dùng thử (truy cập được trong showdown):**
 
-> Dán public URL nếu người khác cần mở từ máy riêng; localhost cũng được nếu demo trực tiếp trên máy trình chiếu. Streamlit được khuyến nghị, nhưng nhóm có thể dùng bất kỳ framework nào.
->
-> URL:
+URL: http://localhost:8501
 
 ## A2. Tool agent có
-
-> Liệt kê các tool agent đang dùng. Mỗi tool 1 dòng: tên + làm được gì.
 
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
 | clarify | hỏi lại người dùng khi thiếu thông tin | không |
-|  |  |  |
-|  |  |  |
+| timeline | lấy bài đăng gần đây của một tài khoản X/Twitter | không |
+| social_search | tìm bài đăng X/Twitter theo từ khóa | không |
+| lookup | tìm thông tin/tin tức trên web | không |
+| fetch | đọc nội dung từ URL cụ thể | không |
+| format | trình bày items đã có thành markdown digest | không |
+| dedupe_sources | loại item trùng trước khi format | có |
+| source_triage | chấm điểm ưu tiên và gắn cờ rủi ro nguồn | có |
+| policy | tìm trong company policy nội bộ | không |
+| papers | tìm paper trên arXiv | không |
+| paper_text | trích text từ paper arXiv | không |
+| send | gửi nội dung lên Telegram sau xác nhận | không |
 
 ## A3. Câu hỏi mẫu để thử
 
-> 3–5 câu hỏi/yêu cầu mẫu để team khác tự thử agent ngay.
-
-1.
-2.
-3.
+1. Tin tức AI hôm nay có gì nổi bật?
+2. Tweet mới nhất của Elon Musk là gì?
+3. Mọi người đang bàn gì về OpenAI trên Twitter?
+4. Tóm tắt bài này giúp mình: https://example.com
+5. Tìm trên web tin AI hôm nay và tìm thêm tweet về AI.
 
 ## A4. Kịch bản demo đã rehearse
 
-> Chuẩn bị 3–5 scenario. Mỗi scenario cần cho thấy tool đã làm gì và một thay đổi cụ thể giữa các version.
-
 | Scenario | Tool trace cần thấy | Câu chuyện cải thiện version | Fallback run/transcript |
 |---|---|---|---|
-|  |  |  |  |
+| Tin AI hôm nay | lookup(topic=news,timeframe=day) → dedupe_sources/source_triage → format | Tool mới giúp giảm trùng nguồn và ưu tiên nguồn đáng tin trước khi digest | transcripts/*.transcript.json |
+| Tweet theo tài khoản | timeline(screenname=elonmusk,limit=1) | Provider/API tools đã smoke test pass; trace hiển thị args rõ | transcripts/*.transcript.json |
+| Chủ đề trên Twitter | social_search(query=OpenAI,search_type=Latest) | RapidAPI search pass sau khi key/plan đúng | transcripts/*.transcript.json |
+| Thiếu URL | clarify(response_type=text) | Agent cần hỏi lại thay vì đoán URL | transcripts/*.transcript.json |
 
 ---
 
@@ -109,9 +113,9 @@ UI is core deliverable, not bonus. Do not list it here.
 
 | Category | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| Must-have: tool mới đầu tiên |  |  |  |
-| Optional built-in |  |  |  |
-| Bonus: tool mới thứ 4 trở đi |  |  |  |
+| Must-have: tool mới đầu tiên | tools/dedupe_sources/TOOL.md, tools/dedupe_sources/tool.py | Smoke test pass: input_count=3, output_count=2, removed_count=1 | Local only, no secret, no side effect |
+| Additional local tool | tools/source_triage/TOOL.md, tools/source_triage/tool.py | Smoke test pass: ranks items and returns warnings | Triage score is heuristic, not factual verification |
+| Provider/API smoke tests | terminal evidence | DeepSeek preflight, lookup, fetch, timeline, social_search pass | API quota/rate limits still need manual monitoring |
 
 ## B6. Reflection
 
