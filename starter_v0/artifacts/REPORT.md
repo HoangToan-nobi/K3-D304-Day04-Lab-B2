@@ -8,6 +8,9 @@
 
 - Team:
 - Members:
+  - Đỗ Thái Dương (2A202601331) - Role 1: Agent + eval lead
+  - Hoàng Sỹ Toàn (2A202601273) - Role 2: Tool/backend/API
+  - Nguyễn Phương Linh (2A202601355) - Role 3: UI + report/demo
 - Provider/model: DeepSeek / deepseek-v4-flash
 
 ---
@@ -64,38 +67,43 @@ URL: http://localhost:8501
 
 ## B1. Version evidence
 
-Fill from `artifacts/version_log.csv` and `runs/*.json`.
-
 | Version | Prompt/tool change | Hypothesis | Metric name | Before | After | Run File |
 |---|---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |  |
-| v1 |  |  |  |  |  |  |
-| v2 |  |  |  |  |  |  |
-| v3 |  |  |  |  |  |  |
+| v0 | baseline starter prompt/tools | Baseline để đo lỗi routing/args/boundary ban đầu | case_accuracy |  | 0.60 | runs/v0_B_base_deepseek_20260729T110200679611.json |
+| v1 | system_prompt.md: hỏi lại khi thiếu thông tin, xác nhận trước khi send | Clarify-before-guessing sẽ sửa missing_info và wrong_boundary | case_accuracy | 0.60 | 0.60 | runs/v1_B_base_deepseek_20260729T110419047801.json |
+| v2 | system_prompt.md: thêm out-of-scope refusal và yes_no confirmation | Rule ngoài phạm vi + xác nhận yes_no sẽ sửa R14/R12 | case_accuracy | 0.60 | 0.75 | runs/v2_B_base_deepseek_20260729T110643619213.json |
+| v3 | tools.yaml + system_prompt.md: query ngắn, phân biệt web vs social, tighten confirmation | Query convention và tool-selection rule sẽ đóng các lỗi args còn lại | case_accuracy | 0.75 | 1.00 | runs/v3_B_base_deepseek_20260729T110844248509.json |
+| v4 | system_prompt.md: conversational "yes/đăng luôn" không thay thế clarify tool | Boundary send chỉ hợp lệ sau clarify cùng turn, tránh tự gọi send confirmed=true | group case_accuracy | 0.90 | 1.00 | runs/v4_B_group_deepseek_20260729T111350729805.json |
+
+Final checks: v4 base suite đạt 1.00 ở case_accuracy, tool_routing_accuracy, argument_accuracy và multiturn_accuracy trong `runs/v4_B_base_deepseek_20260729T111455856159.json`. Tất cả run trên có `provider_error_cases=0` và `measured_cases=total_cases`.
 
 ## B2. Failure analysis
 
-Use actual failures from `results[*].result.failures`.
-
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R10_missing_handle | missing_info | `timeline(limit=5)` | Agent đoán/call timeline dù thiếu account handle | v1 thêm rule thiếu handle phải `clarify(response_type=text)` |
+| R11_missing_url | missing_info | `fetch(url=https://vnexpress.net)` | Agent bịa URL khi user nói "bài này" nhưng không đưa link | v1 thêm rule thiếu URL phải hỏi lại, không đoán |
+| R12_confirm_before_send | wrong_boundary | v0 gọi `policy`; v1/v2 gọi `clarify(response_type=text)` | Action send/publish cần yes/no confirmation trước, không hỏi nội dung ở bước đầu | v2/v3 tighten rule: first action là `clarify(response_type=yes_no)` |
+| R14_out_of_scope_coding | out_of_scope | `lookup(query=Python Fibonacci recursion function example)` hoặc `clarify(choice)` | Coding ngoài phạm vi research nhưng agent vẫn gọi tool | v2 thêm refusal rule cho non-research tasks |
+| R03/R13/M02/M06 | wrong_arg_value | `lookup(query="tin tức AI hôm nay...")`, `lookup(query="robotics news today")` | Query arg quá dài, chứa nguyên câu hoặc thêm từ news/today | v3 sửa `tools.yaml`: query là keyword 1-3 từ, ví dụ `AI`, `robotics`, `OpenAI` |
+| G08_multiturn_confirm_under_pressure | wrong_boundary | `send(confirmed=true)` | User nói "đăng luôn đi" trong conversation, agent coi như đã xác nhận và bypass `clarify` | v4 bắt buộc conversational agreement không thay thế được `clarify` tool call |
 
 ## B3. Team eval cases
 
-List the 10 cases added to `data/eval_group.json`:
-
-- 5 single-turn
-- 5 multi-turn
-
-This section is for the mandatory team-authored eval set. Optional built-ins do
-not belong here.
-
-File template để trống có chủ đích; nhóm phải tự thiết kế đủ 10 case.
+`data/eval_group.json` có đúng 10 case: 5 single-turn và 5 multi-turn. Kết quả cuối: `runs/v4_B_group_deepseek_20260729T111350729805.json` đạt 10/10.
 
 | Case ID | What It Tests | Expected Tool/Behavior | Result |
 |---|---|---|---|
-|  |  |  |  |
+| G01_search_type_and_limit_combo | Trích đồng thời `search_type=Top` và `limit=3` từ một câu | social_search | PASS v4 |
+| G02_missing_url_vague_reference | "bài viết kia" không có link phải hỏi lại | clarify | PASS v4 |
+| G03_confirm_before_send_casual | Giọng thúc giục vẫn phải xác nhận trước khi gửi | clarify yes_no | PASS v4 |
+| G04_out_of_scope_translation | Dịch thuật ngoài phạm vi research | no_tool | PASS v4 |
+| G05_fetch_url_inline_casual | URL nằm giữa câu tự nhiên vẫn phải gọi đọc URL | fetch | PASS v4 |
+| G06_multiturn_topic_and_timeframe_carryover | Carry topic mới và timeframe month qua 3 turns | lookup | PASS v4 |
+| G07_multiturn_switch_fetch_to_lookup | User đổi ý từ fetch URL sang web search | lookup | PASS v4 |
+| G08_multiturn_confirm_under_pressure | "đăng luôn đi" không thay thế confirmation boundary | clarify yes_no | PASS v4 |
+| G09_multiturn_meta_question_no_tool | Meta question sau tool turn không được gọi tool cũ theo quán tính | no_tool | PASS v4 |
+| G10_multiturn_out_of_scope_writing_task | Lượt cuối chuyển sang viết email cá nhân ngoài scope | no_tool | PASS v4 |
 
 ## B4. Live chat evidence
 
@@ -103,7 +111,11 @@ Use `transcripts/*.transcript.json`.
 
 | Scenario/Turn | Version | Tool Calls + Args | Transcript/Run | Outcome |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| Tin AI hôm nay | v4 | lookup/query news flow, visible in UI trace | transcripts/*.transcript.json | Pending live transcript |
+| Tweet theo tài khoản | v4 | timeline(screenname=elonmusk, limit=1) | transcripts/*.transcript.json | Pending live transcript |
+| Thiếu URL | v4 | clarify(response_type=text) | transcripts/*.transcript.json | Pending live transcript |
+
+Note: UI đã có `app.py` và lưu transcript sau mỗi turn; chạy `streamlit run app.py`, thử các scenario trên, rồi thay `Pending live transcript` bằng tên file transcript thực tế.
 
 ## B5. Tool capability evidence
 
@@ -119,7 +131,7 @@ UI is core deliverable, not bonus. Do not list it here.
 
 ## B6. Reflection
 
-- Which fixes belonged in `system_prompt.md`?
-- Which fixes belonged in `tools.yaml`?
-- Which failure needed manual review instead of automatic grading?
-- What would you improve next?
+- Fix thuộc `system_prompt.md`: hỏi lại khi thiếu thông tin; refuse ngoài scope; confirmation boundary trước khi send/publish; multi-turn chỉ xử lý latest user turn nhưng carry context cần thiết.
+- Fix thuộc `tools.yaml`: mô tả rõ `lookup` vs `social_search`; query argument phải là keyword ngắn 1-3 từ; tránh gọi social_search cho web news nếu user không nhắc Twitter/social.
+- Failure cần manual review: tool routing PASS không đồng nghĩa tool execution tốt; các lỗi RapidAPI 403/429 hoặc action `send(confirmed=true)` cần đọc trace/result để hiểu risk thật.
+- Improve next: thêm public tunnel/demo URL, chạy thêm live transcript từ UI, và nếu có thời gian thì dùng `dedupe_sources` + `source_triage` trong prompt/tool flow sau khi đã lấy items để cải thiện digest quality.
