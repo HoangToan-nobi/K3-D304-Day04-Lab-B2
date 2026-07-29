@@ -330,6 +330,30 @@ def _reset_session() -> None:
     st.session_state.transcript = None
 
 
+def _render_turn_trace(turn: dict[str, Any], *, expanded: bool = False) -> None:
+    rounds = turn.get("rounds", [])
+    if not rounds:
+        st.caption("No structured trace was recorded for this turn.")
+        return
+
+    for round_record in rounds:
+        call_count = len(round_record.get("tool_calls", []))
+        result_count = len(round_record.get("tool_results", []))
+        label = f"Round {round_record.get('round')} | calls {call_count} | results {result_count}"
+        with st.expander(label, expanded=expanded and bool(call_count)):
+            if round_record.get("assistant_text"):
+                st.markdown("**Assistant routing note**")
+                st.write(round_record.get("assistant_text"))
+
+            calls_col, results_col = st.columns(2)
+            with calls_col:
+                st.markdown("**Tool calls**")
+                st.code(_json(round_record.get("tool_calls", [])), language="json")
+            with results_col:
+                st.markdown("**Tool results**")
+                st.code(_json(round_record.get("tool_results", [])), language="json")
+
+
 st.set_page_config(page_title="Research Agent", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
@@ -399,6 +423,9 @@ with chat_tab:
             if tool_names:
                 pills = "".join(f'<span class="tool-pill">{name}</span>' for name in tool_names)
                 st.markdown(pills, unsafe_allow_html=True)
+            with st.expander("Xem cách suy luận của bot (decision trace)", expanded=False):
+                st.caption("Hiển thị evidence quan sát được: tool nào được chọn, arguments, result/error và status. Không hiển thị private chain-of-thought ẩn của model.")
+                _render_turn_trace(turn)
 
 with trace_tab:
     if not st.session_state.turns:
@@ -407,18 +434,7 @@ with trace_tab:
     for turn in st.session_state.turns:
         st.markdown(f"#### Turn {turn['turn_index']}")
         st.caption(turn["user"])
-        for round_record in turn.get("rounds", []):
-            call_count = len(round_record.get("tool_calls", []))
-            result_count = len(round_record.get("tool_results", []))
-            label = f"Round {round_record.get('round')} | calls {call_count} | results {result_count}"
-            with st.expander(label, expanded=bool(call_count)):
-                calls_col, results_col = st.columns(2)
-                with calls_col:
-                    st.markdown("**Tool calls**")
-                    st.code(_json(round_record.get("tool_calls", [])), language="json")
-                with results_col:
-                    st.markdown("**Tool results**")
-                    st.code(_json(round_record.get("tool_results", [])), language="json")
+        _render_turn_trace(turn, expanded=True)
 
 with transcript_tab:
     if st.session_state.transcript:
