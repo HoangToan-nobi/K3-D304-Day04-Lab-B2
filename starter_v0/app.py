@@ -30,18 +30,20 @@ TRANSCRIPTS_DIR = ROOT / "transcripts"
 CSS = """
 <style>
 :root {
-  --surface: oklch(98% 0.006 232);
-  --surface-raised: oklch(99% 0.004 232);
-  --surface-muted: oklch(94% 0.008 232);
-  --line: oklch(87% 0.014 232);
-  --line-strong: oklch(74% 0.022 232);
-  --text: oklch(24% 0.026 232);
-  --text-muted: oklch(48% 0.026 232);
-  --accent: oklch(49% 0.118 224);
-  --accent-soft: oklch(92% 0.035 224);
-  --success: oklch(50% 0.11 154);
-  --warning: oklch(63% 0.13 70);
-  --danger: oklch(55% 0.14 28);
+  --surface: oklch(17% 0.012 242);
+  --surface-raised: oklch(21% 0.016 242);
+  --surface-muted: oklch(14% 0.012 242);
+  --surface-soft: oklch(25% 0.018 242);
+  --line: oklch(32% 0.02 242);
+  --line-strong: oklch(44% 0.025 242);
+  --text: oklch(91% 0.012 242);
+  --text-muted: oklch(68% 0.018 242);
+  --accent: oklch(72% 0.105 190);
+  --accent-strong: oklch(80% 0.125 190);
+  --accent-soft: oklch(28% 0.045 190);
+  --success: oklch(74% 0.12 154);
+  --warning: oklch(80% 0.13 78);
+  --danger: oklch(72% 0.14 28);
 }
 
 .stApp {
@@ -57,11 +59,18 @@ section[data-testid="stSidebar"] {
 
 section[data-testid="stSidebar"] * {
   font-size: 0.92rem;
+  color: var(--text);
+}
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] .stCaptionContainer,
+section[data-testid="stSidebar"] p {
+  color: var(--text-muted) !important;
 }
 
 .block-container {
-  max-width: 1220px;
-  padding-top: 1.4rem;
+  max-width: 1180px;
+  padding-top: 1.1rem;
   padding-bottom: 2.25rem;
 }
 
@@ -81,8 +90,8 @@ h1 {
   border: 1px solid var(--line);
   background: var(--surface-raised);
   border-radius: 8px;
-  padding: 18px 20px 16px;
-  margin-bottom: 14px;
+  padding: 16px 18px 15px;
+  margin-bottom: 12px;
 }
 
 .agent-title-row {
@@ -108,7 +117,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--line);
-  margin: 14px 0 22px;
+  margin: 12px 0 18px;
 }
 
 .status-cell {
@@ -135,10 +144,10 @@ h1 {
 }
 
 .trace-empty {
-  border: 1px dashed var(--line-strong);
+  border: 1px dashed var(--line);
   border-radius: 8px;
-  background: var(--surface-raised);
-  padding: 22px;
+  background: var(--surface-muted);
+  padding: 18px;
   color: var(--text-muted);
   margin-top: 8px;
 }
@@ -157,7 +166,7 @@ h1 {
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-strong);
   font-size: 0.78rem;
   font-weight: 650;
   margin: 0 5px 5px 0;
@@ -174,6 +183,8 @@ h1 {
 
 div[data-testid="stChatMessage"] {
   border-radius: 8px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
 }
 
 div[data-testid="stExpander"] {
@@ -191,7 +202,9 @@ div[data-testid="stCodeBlock"] {
 .stDownloadButton > button {
   min-height: 42px;
   border-radius: 7px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--text);
   font-weight: 650;
 }
 
@@ -199,6 +212,7 @@ div[data-testid="stCodeBlock"] {
 .stDownloadButton > button:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--surface-raised);
 }
 
 .stButton > button:focus-visible,
@@ -207,6 +221,56 @@ input:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+div[data-testid="stTextInput"] input,
+div[data-testid="stNumberInput"] input,
+div[data-baseweb="select"] > div {
+  background: var(--surface-raised);
+  border-color: var(--line);
+  color: var(--text);
+  border-radius: 7px;
+}
+
+button[kind="secondary"] {
+  background: var(--surface-soft);
+}
+
+.stTabs [data-baseweb="tab-list"] {
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.stTabs [data-baseweb="tab"] {
+  color: var(--text-muted);
+  border-radius: 7px 7px 0 0;
+  padding: 8px 12px;
+}
+
+.stTabs [aria-selected="true"] {
+  color: var(--accent-strong) !important;
+  background: var(--surface-raised);
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+  background-color: var(--accent) !important;
+}
+
+div[data-testid="stChatInput"] {
+  background: var(--surface-muted);
+  border-top: 1px solid var(--line);
+}
+
+div[data-testid="stChatInput"] textarea {
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+div[data-testid="stToolbar"],
+header[data-testid="stHeader"] {
+  background: var(--surface-muted);
 }
 
 @media (max-width: 760px) {
