@@ -111,11 +111,11 @@ Use `transcripts/*.transcript.json`.
 
 | Scenario/Turn | Version | Tool Calls + Args | Transcript/Run | Outcome |
 |---|---|---|---|---|
-| Tin AI hôm nay | v4 | lookup/query news flow, visible in UI trace | transcripts/*.transcript.json | Pending live transcript |
-| Tweet theo tài khoản | v4 | timeline(screenname=elonmusk, limit=1) | transcripts/*.transcript.json | Pending live transcript |
-| Thiếu URL | v4 | clarify(response_type=text) | transcripts/*.transcript.json | Pending live transcript |
+| Tin AI hôm nay | v4 | `lookup(query=AI, topic=news, timeframe=day)` → `format(template=sections)` | transcripts/v4_deepseek_20260729T114243241902.transcript.json | PASS: answered with visible tool trace |
+| Tweet theo tài khoản | v4 | `timeline(screenname=elonmusk, limit=5)` | transcripts/v4_deepseek_20260729T114243241902.transcript.json | PASS: answered with visible tool trace |
+| Thiếu URL | v4 | `clarify(response_type=text)` | transcripts/v4_deepseek_missing_url_20260729T114342400394.transcript.json | PASS: asks user for URL instead of guessing |
 
-Note: UI đã có `app.py` và lưu transcript sau mỗi turn; chạy `streamlit run app.py`, thử các scenario trên, rồi thay `Pending live transcript` bằng tên file transcript thực tế.
+UI evidence: `app.py` chạy bằng Streamlit, hiển thị request/response, từng round tool call + result, artifact version/hash và transcript path.
 
 ## B5. Tool capability evidence
 
