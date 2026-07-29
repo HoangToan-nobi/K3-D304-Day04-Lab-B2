@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from typing import Any
 
 import requests
@@ -13,12 +14,31 @@ def _twitter_get(path: str, params: dict[str, Any]) -> dict[str, Any]:
     host = os.getenv("RAPIDAPI_TWITTER_HOST", "twitter-api45.p.rapidapi.com")
     if not key:
         raise RuntimeError("Missing RAPIDAPI_KEY env var")
-    response = requests.get(
-        f"https://{host}{path}",
-        params=params,
-        headers={"x-rapidapi-key": key, "x-rapidapi-host": host},
-        timeout=TIMEOUT,
-    )
+    response = None
+    for attempt in range(2):
+        response = requests.get(
+            f"https://{host}{path}",
+            params=params,
+            headers={"x-rapidapi-key": key, "x-rapidapi-host": host},
+            timeout=TIMEOUT,
+        )
+        if response.status_code != 429 or attempt == 1:
+            break
+        retry_after = response.headers.get("retry-after")
+        delay = int(retry_after) if retry_after and retry_after.isdigit() else 2
+        time.sleep(min(delay, 5))
+
+    assert response is not None
+    if response.status_code == 403:
+        raise RuntimeError(
+            "RapidAPI 403 Forbidden: key is valid but this app/plan is not allowed to use "
+            f"{path}. Subscribe to Twitter API45 or enable this endpoint in RapidAPI."
+        )
+    if response.status_code == 429:
+        raise RuntimeError(
+            "RapidAPI 429 Too Many Requests: quota/rate limit exceeded for Twitter API45. "
+            "Wait for the window to reset or use another subscribed key."
+        )
     response.raise_for_status()
     return response.json()
 
@@ -49,4 +69,3 @@ def search_tweets(query: str = "", search_type: str = "Latest", limit: int = 5) 
         return {"tool": "search_tweets", "query": query, "search_type": search_type, "items": _tweets_from(data, limit)}
     except Exception as exc:
         return err("search_tweets", exc)
-

@@ -77,6 +77,48 @@ tools:
         headline: {type: string, default: "", description: "Tiêu đề"}
       required: [items, template]
 
+  - name: dedupe_sources
+    description: "Loại bỏ item trùng lặp từ kết quả đã có trước khi format. Chỉ dùng sau lookup/social_search/fetch; không dùng để tìm kiếm hoặc đọc nguồn mới."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item đã thu thập từ tool khác"
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+              section: {type: string}
+        max_items: {type: integer, default: 10, description: "Số item tối đa giữ lại"}
+      required: [items]
+
+  - name: source_triage
+    description: "Chấm điểm ưu tiên và gắn cờ rủi ro cho các item đã thu thập trước khi format. Chỉ dùng sau khi đã có items từ tool khác; không dùng để tìm kiếm, đọc URL hoặc xác minh fact mới."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item đã thu thập từ tool khác"
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+              date: {type: string}
+              section: {type: string}
+        query: {type: string, default: "", description: "Chủ đề research ban đầu để tính mức độ liên quan"}
+        max_items: {type: integer, default: 8, description: "Số item ưu tiên tối đa trả về"}
+      required: [items]
+
   # ---------------- Bonus tools ----------------
   - name: send
     description: "Gửi một đoạn văn bản đi."
