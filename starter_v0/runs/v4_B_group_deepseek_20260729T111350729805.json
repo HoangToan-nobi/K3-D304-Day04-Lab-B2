@@ -1,0 +1,677 @@
+{
+  "run_id": "v4_B_group_deepseek_20260729T111350729805",
+  "version": "v4",
+  "artifact_version": "v4+p3efd980e50ea+tbb620fcaf694",
+  "prompt_hash": "3efd980e50ea41faf070fbbfd99516c3b1461cddba4425cb72a92bd5b7e4a806",
+  "tools_hash": "bb620fcaf6942624e4549f714d56366b56ea2a6c31d00be269cf511879d4bcbb",
+  "phase": "B",
+  "suite": "group",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "system_prompt": "D:\\lab_VinUni\\K3-D304-Day04-Lab-B2\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "D:\\lab_VinUni\\K3-D304-Day04-Lab-B2\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "10 case do nhom tu viet: 5 single-turn dung query va 5 multi-turn dung turns. Bao phu du 6 failure_type: wrong_tool, wrong_arg_value, wrong_boundary, unnecessary_tool, out_of_scope, missing_info.",
+  "generated_at": "2026-07-29T11:13:50",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_search_type_and_limit_combo",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_search_type_and_limit_combo",
+        "difficulty": "hard",
+        "what_it_tests": "Trích đồng thời 2 arg trong 1 câu: 'nổi bật' -> search_type=Top, '3 tweet' -> limit=3."
+      },
+      "input": "Cho mình xem 3 tweet nổi bật nhất về Bitcoin",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Bitcoin",
+              "search_type": "Top",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Bitcoin",
+              "search_type": "Top",
+              "limit": 3
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "Bitcoin",
+            "search_type": "Top",
+            "limit": 3
+          },
+          "result": {
+            "tool": "search_tweets",
+            "error": "HTTPError",
+            "message": "403 Client Error: Forbidden for url: https://twitter-api45.p.rapidapi.com/search.php?query=Bitcoin&search_type=Top"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_missing_url_vague_reference",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_url_vague",
+        "difficulty": "medium",
+        "what_it_tests": "'bài viết kia' không kèm link cụ thể -> phải hỏi lại URL, không được đoán/bịa link."
+      },
+      "input": "Đọc giúp mình bài viết kia rồi tóm tắt",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn muốn mình đọc bài viết nào? Vui lòng gửi link/URL bài viết đó nhé.",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn muốn mình đọc bài viết nào? Vui lòng gửi link/URL bài viết đó nhé.",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn muốn mình đọc bài viết nào? Vui lòng gửi link/URL bài viết đó nhé.",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_confirm_before_send_casual",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_before_send_casual_phrasing",
+        "difficulty": "medium",
+        "what_it_tests": "Yêu cầu gửi bằng giọng thúc giục ('luôn nhé') vẫn phải qua clarify yes_no trước, không tự gửi."
+      },
+      "input": "Bản tin tuần này ổn rồi, đăng lên Telegram cho mọi người xem luôn nhé",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn muốn tôi đăng bản tin tuần này lên Telegram? Vui lòng xác nhận.",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn muốn tôi đăng bản tin tuần này lên Telegram? Vui lòng xác nhận.",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn muốn tôi đăng bản tin tuần này lên Telegram? Vui lòng xác nhận.",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_out_of_scope_translation",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope_translation",
+        "difficulty": "easy",
+        "what_it_tests": "Yêu cầu dịch thuật ngoài phạm vi research -> KHÔNG gọi tool."
+      },
+      "input": "Bạn dịch giúp mình câu này sang tiếng Anh: 'Hôm nay trời đẹp quá'",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Dịch: **\"The weather is so beautiful today.\"**",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G05_fetch_url_inline_casual",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_fetch_inline_url",
+        "difficulty": "easy",
+        "what_it_tests": "URL nằm giữa câu hỏi tự nhiên (không phải câu lệnh trực tiếp) -> vẫn phải nhận ra và gọi fetch, không lookup."
+      },
+      "input": "Có tin gì mới trên https://openai.com/news không, xem giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/news"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/news"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://openai.com/news"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://openai.com/news",
+            "items": [
+              {
+                "title": "OpenAI News | OpenAI",
+                "url": "https://openai.com/news",
+                "source": "openai.com",
+                "summary": "OpenAI\n\n## All\n\n* * *\n\nFilter\nSort\n\nSwitch cards to show Media\n\nSwitch cards to hide Media\n\n![Scientific computing agentic AI card image (1x1)](https://images.ctfassets.net/kftzwdyauwt9/5opqp3rNWM7eax6GUc6MAl/1c710a4aba8c5c1e0b7d1c1c7c8b32db/1x1__1_.png?w=3840&q=90&fm=webp)\n\n[Scientific computing in the age of agentic AI\\\\\n\\\\\nPublicationJul 28, 2026](https://openai.com/index/scientific-computing-agentic-ai/)\n\n![How AI is expanding what we do at work > Cover image](https://images.ctfassets.net/kftzwdyauwt9/71jqBtMoMmnYCEyisAnZ0K/06d8fd5ae403146245901145f9d6f703/Art_Card__4_.png?w=3840&q=90&fm=webp)\n\n[How AI is expanding what people do at work\\\\\n\\\\\nCompanyJul 27, 2026](https://openai.com/index/how-ai-is-expanding-what-people-do-at-work/)\n\n![Health in ChatGPT > Cover Image](https://images.ctfassets.net/kftzwdyauwt9/48aIp3cQOKJ57vpQeqOb8y/2e8732bcad5ceea1c7b20cf001bd2823/1_1_Art_Card.png?w=3840&q=90&fm=webp)\n\n[Launching Health in ChatGPT \\\\\n\\\\\nProductJul 23, 2026](https://openai.com/index/health-in-chatgpt/)\n\n![How news organizations are using AI > Card Image](https://images.ctfassets.net/kftzwdyauwt9/5nTzxwRy4Is9PQSluyYkWP/d6e7953a692a5a8c926885e2f50a3427/how_news_orgs_use_AI_1x1.png?w=3840&q=90&fm=webp)\n\n[How news organizations use AI to advance their vital missions\\\\\n\\\\\nCompanyJul 22, 2026](https://openai.com/index/how-news-organizations-are-using-ai/)\n\n![OpenAI Presence 1x1](https://images.ctfassets.net/kftzwdyauwt9/5JBDenSGI6wx5CMPPlaM5J/da9d8e27a0bd70d845a816b28ac641a9/OpenAI_Presence_1x1.png?w=3840&q=90&fm=webp)\n\n[Introducing OpenAI Presence\\\\\n\\\\\nProductJul 22, 2026](https://openai.com/index/introducing-openai-presence/)\n\n![Building AI for the ambitions of small businesses > Card image](https://images.ctfassets.net/kftzwdyauwt9/7wmfLwQnQQpV1xogqASUpR/76c80831b475e17a187ba35a7e0a46c8/SMB_launch_blog_1x1.png?w=3840&q=90&fm=webp)\n\n[Introducing the ChatGPT for small business program\\\\\n\\\\\nAI AdoptionJul 21, 2026](https://openai.com/index/introducing-chatgpt-small-business-program/)\n\n![Hugging Face Security Incident 1x1](https://images.ctfassets.net/kftzwdyauwt9/1H0bdkoSFFcqNTx4DSNpal/56f4b7575c012f0698b1be0dafb379f0/Hugging_Face_Security_Incident_1x1.png?w=3840&q=90&fm=webp)\n\n[OpenAI and Hugging Face address security incident\\\\\n\\\\\nSecurityJul 21, 2026](https://openai.com/index/hugging-face-model-evaluation-security-incident/)\n\n![David Vélez and Robin Vince 1x1](https://images.ctfassets.net/kftzwdyauwt9/7wQKVPmXFJk1gTBLmJTO6N/f90d79c4e011e05fb0d06aebfa3a265c/c47f1f6d-440a-4f0b-a669-50ca79ce1064.png?w=3840&q=90&fm=webp)\n\n[David Vélez and Robin Vince join OpenAI boards\\\\\n\\\\\nCompanyJul 21, 2026](https://openai.com/index/david-velez-robin-vince-join-openai-boards/)\n\n![PIA safety > Cover image](https://images.ctfassets.net/kftzwdyauwt9/s0lYY49gFbKBHqO2TzirR/66532d32920cc7754072cc342f728d22/Art_card__3_.png?w=3840&q=90&fm=webp)\n\n[Safety and alignment in an era of long-horizon models\\\\\n\\\\\nSafetyJul 20, 2026](https://openai.com/index/safety-alignment-long-horizon-models/)\n\nLoad more"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G06_multiturn_topic_and_timeframe_carryover",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_topic_switch_plus_new_timeframe",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: đổi chủ đề công nghệ->SpaceX ở lượt 2, thêm timeframe=month ở lượt 3, phải gộp đúng cả hai vào 1 tool call cuối."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm tin công nghệ mới nhất"
+        },
+        {
+          "role": "user",
+          "content": "Thật ra mình muốn tin về SpaceX"
+        },
+        {
+          "role": "user",
+          "content": "Cho mình luôn khung thời gian trong tháng này"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "SpaceX",
+              "topic": "news",
+              "timeframe": "month"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "SpaceX",
+              "topic": "news",
+              "timeframe": "month",
+              "max_results": 5
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "SpaceX",
+            "topic": "news",
+            "timeframe": "month",
+            "max_results": 5
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "SpaceX",
+            "topic": "news",
+            "timeframe": "month",
+            "items": [
+              {
+                "title": "SpaceX stock has cratered nearly 23% since company ...",
+                "url": "https://www.cnbc.com/2026/07/17/spacex-stock-starship-test-flight-aborted.html",
+                "source": "cnbc.com",
+                "summary": "SPCX\n\nSpaceX employees go to work at the SpaceX facility in Hawthorne, California, on the day of their company's initial public offering, June 12, 2026.\n\nMike Blake | Reuters\n\nSpaceX stock has posted losses in nine of the last 10 trading days, and as of Friday's close, had plummeted nearly 23% since the company was added to the Nasdaq-100. [...] The Nasdaq fast-tracked the company's inclusion in the index, allowing SpaceX to be added after just 15 trading days. Previously, companies had to wait months.\n\nInvestors are watching the company's rocket tests more closely after it raised a record $85.7 billion in the biggest initial public offering ever in June, pricing shares at $135.\n\nSpaceX's shares have soared and dipped since its stock market debut. [...] Livestream\n\nTech\n\n# SpaceX stock has cratered nearly 23% since the company joined the Nasdaq-100\n\nthumbnail\n\nSawdah Bhaimiya\n\nWATCH LIVE\n\nKey Points\n\n SpaceX's stock sank after a failed Starship test flight the previous day.\n An engine ignition failure triggered SpaceX to abort the test launch.\n Investors are watching closely after the company's blockbuster IPO in June.\n\nIn this article\n\n SPCX",
+                "score": 0.5803764
+              },
+              {
+                "title": "Retail and Wall Street are underwater on SpaceX",
+                "url": "https://www.cnbc.com/2026/07/17/retail-and-wall-street-are-underwater-on-spacex-but-not-going-down-without-a-fight.html",
+                "source": "cnbc.com",
+                "summary": "Shares of the satellite and exploration business dropped 5.5% on Friday, extending a 10-day decline and hitting a low of $122.12 — roughly 9% below its IPO price of $135. The stock's now down 44% from its intraday high of $225.64. The Nasdaq-100, which was less than a percent off its record at SpaceX's high, is now down 6% from that peak. [...] Billboards in Times Square celebrate the SpaceX IPO debut at the Nasdaq on June 12th, 2026.\n\nAdam Jeffery | CNBC\n\nGood times for SpaceX are proving short-lived as Elon Musk's intergalactic IPO is now giving fodder to bears who said the U.S. stock market wasn't ready for a $2 trillion market-cap injection. [...] SpaceX traded just over 500,000 options contracts by late morning Friday, the 11th-heaviest traded ticker in the market, certainly respectable but surpassed by Micron, VIX, small-cap ETF (IWM) and AAPL trading, a notable drop-off for the now-$1.6 trillion market cap giant.\n\nOf the $350 million in SpaceX options premium traded Friday, $290 million was tied to puts, and seven of the top 10 contracts traded by volume were puts, according to data from SpotGamma.",
+                "score": 0.54492307
+              },
+              {
+                "title": "SpaceX conducts 13th Starship test flight - SpaceNews",
+                "url": "https://spacenews.com/spacex-conducts-13th-starship-test-flight",
+                "source": "spacenews.com",
+                "summary": "SpaceNews\n\nSpaceNews\n\nCovering the business and politics of space\n\n# SpaceX conducts 13th Starship test flight\n\nStarship Flight 13 liftoff\n\nWASHINGTON — SpaceX launched Starship on its 13th suborbital test flight July 24, correcting some of the issues seen on the previous flight while deploying functioning satellites for the first time. [...] The company first attempted the Flight 13 launch July 16 but aborted the launch immediately after ignition of the engines in the Super Heavy booster. SpaceX later said four of 33 engines in the booster failed to ignite properly because of problems with their liquid oxygen turbopumps, triggering the abort.",
+                "score": 0.474023
+              },
+              {
+                "title": "SpaceX aborts Starship Flight 13 launch attempt - SpaceNews",
+                "url": "https://spacenews.com/spacex-aborts-starship-flight-13-launch-attempt",
+                "source": "spacenews.com",
+                "summary": "SpaceX’s Starship suffered an abort at T-0 July 16 when some of its Raptor engines failed to ignite. Credit: SpaceX webcast\n\n \n\nWASHINGTON — SpaceX aborted the launch of its latest Starship test flight July 16 when some of the vehicle’s engines failed to ignite. [...] The Flight 13 abort was the first Starship launch attempt since SpaceX went public June 12 and illustrated the skittishness of some investors. Shares in the company were at about $132 in after-hours trading when the abort took place. Within five minutes, the shares plummeted to nearly $125 per share before rebounding slightly to $127.\n\nEarlier in the day, shares closed at $131.11, below the initial public offering price of $135 for the first time.\n\n### Related\n\n\n\n## Verify your email [...] Skip to content\n\nSpaceNews\n\nCovering the business and politics of space\n\n Sign In\n\nHome / SpaceX aborts Starship Flight 13 launch attempt\n\nPosted inLaunch\n\n# SpaceX aborts Starship Flight 13 launch attempt\n\n  by Jeff Foust\n\n Share on X (Opens in new window) X\n Share on LinkedIn (Opens in new window) LinkedIn\n Share on Facebook (Opens in new window) Facebook\n Share on Reddit (Opens in new window) Reddit\n Email a link to a friend (Opens in new window) Email\n\n  Starship Flight 13 scrub",
+                "score": 0.47285444
+              },
+              {
+                "title": "Congress members buy Musk's SpaceX stock after IPO",
+                "url": "https://www.cnbc.com/2026/07/28/spacex-stock-congress-lawmakers-ipo-conflict-of-interest.html",
+                "source": "cnbc.com",
+                "summary": "Five of those members serve on committees overseeing aspects of SpaceX's business — including defense, satellite communications and AI — and securities markets. The company relies heavily on federal approvals and receives billions in government contracts — spending directed by the very lawmakers buying its stock. [...] In this article\n\n SPCX\n\nSamuel Boivin | Nurphoto | Getty Images\n\nThree days after SpaceX’s blockbuster public debut, Rep. William Timmons bought as much as $100,000 of the rocket company's stock.\n\nThe South Carolina Republican chairs a House oversight panel on military and foreign affairs and sits on a financial services subcommittee covering artificial intelligence — two sectors central to Elon Musk's newly public empire.\n\nHe was not the only member of Congress to buy in. [...] Reps. William Timmons, R-S.C., John McGuire, R-Va., Dan Meuser, R-Pa., Gil Cisneros, D-Calif., Jared Moskowitz, D-Fla., and John James, R-Mich. — or members of their immediate families — bought between roughly $83,000 and $245,000 in SpaceX shares combined, all within six days of its IPO.\n Five of the lawmakers serve on committees whose work intersects with SpaceX's defense, satellite, AI, federal contracting or securities businesses.",
+                "score": 0.4613328
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G07_multiturn_switch_fetch_to_lookup",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_switch_fetch_to_lookup",
+        "difficulty": "hard",
+        "what_it_tests": "User đổi ý từ đọc URL cụ thể sang tìm web theo chủ đề -> phải chuyển tool, không gọi fetch link cũ đã bị hủy."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Đọc giúp mình bài này: https://vnexpress.net/ai"
+        },
+        {
+          "role": "user",
+          "content": "À thôi, mình muốn tìm thêm tin liên quan trên web luôn"
+        },
+        {
+          "role": "user",
+          "content": "Tìm tin về blockchain nhé, không cần đọc link kia nữa"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "blockchain"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "blockchain",
+              "topic": "news",
+              "timeframe": "week",
+              "max_results": 5
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "blockchain",
+            "topic": "news",
+            "timeframe": "week",
+            "max_results": 5
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "blockchain",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Quantum Blockchain wins patent approval for Bitcoin mining technology - Yahoo Finance UK",
+                "url": "https://uk.finance.yahoo.com/news/quantum-blockchain-wins-patent-approval-063300314.html",
+                "source": "uk.finance.yahoo.com",
+                "summary": "Skip to navigation  Skip to right column. # Quantum Blockchain wins patent approval for Bitcoin mining technology. Quantum Blockchain Technologies PLC (AIM:QBT, FRA:BYA1) has received formal US approval for a patent application covering technology intended to improve the efficiency of Bitcoin mining hardware. The US Patent and Trademark Office approved the application, formally titled \"Message Scheduling for Cryptographic Hashing\", which underpins QBT's ASIC Ultra Boost technology. The invention is designed to eliminate redundant calculations from the SHA256 message-scheduling process used in Bitcoin mining. The approval does not yet represent a final grant of patent rights. QBT must complete several formalities, including paying issue and publication fees, and has instructed its UK patent lawyer to coordinate payment with its US attorney. QBT said it would explore licensing and other commercial arrangements with established ASIC manufacturers. It is also seeking semiconductor-sector advisers to support the monetisation process, although management cautioned that there was no certainty over timing, structure or near-term revenue.",
+                "score": 0.22795059
+              },
+              {
+                "title": "From Pasture to Blockchain: How Tokenized Cows Are Revolutionizing Agricultural Finance in Brazil - Bitcoin News",
+                "url": "https://news.bitcoin.com/from-pasture-to-blockchain-how-tokenized-cows-are-revolutionizing-agricultural-finance-in-brazil/",
+                "source": "news.bitcoin.com",
+                "summary": "**A pioneering transaction involving a cattle herd valued at nearly $24K allowed a Brazilian farm to use this value as collateral, tokenizing each cow using technology provided by Cowmed to monitor each animal’s health in real time, with each animal being classified as a receivable.**. The Engendro Velho farm, located in Paraná, Brazil, received a loan of nearly $20K using a herd of 10 cows as collateral, using decentralized technology to digitize the information of each cow. While this kind of transaction is not new, the tokenization and monitoring of the cows enables farmers to get a better deal, as creditors can examine the status of the herd at any time, lowering the risks associated with such a loan. Thiago Martins, CEO of Cowmed, told Valor International that this was the first transaction of its kind registered with B3, which is also preparing to launch tokenized stock trading, and that it opened a new opportunity for troubled farmers to access new credit sources using live collateral.",
+                "score": 0.16725977
+              },
+              {
+                "title": "Crypto Is Entering Its Industrial Age - Newsweek",
+                "url": "https://www.newsweek.com/crypto-is-entering-its-industrial-age-12254687",
+                "source": "newsweek.com",
+                "summary": "For most of crypto’s history, success depended on inventing new protocols and convincing users that one blockchain's technical architecture was superior to another's. The first wave of institutional adoption largely consisted of investors buying raw commodities (Bitcoin as digital gold, Ether as programmable money), but the second, more consequential phase, is seeing institutions working to own the industrial supply chain that produces and services these commodities. The Industrialization of Crypto In crypto's early years, launching a blockchain with a novel consensus mechanism or virtual machine could create enormous value. The New Competitive Landscape Of course, the standardization of outputs leads to the compression of margins. Building Crypto’s Industrial Supply Chain The most valuable crypto businesses, far from being standalone software products, are now turning into sophisticated operational systems. ## **The Industrialization of Crypto**. In crypto's early years, launching a blockchain with a novel consensus mechanism or virtual machine could create enormous value. Of course, the standardization of outputs leads to the compression of margins.",
+                "score": 0.16442282
+              },
+              {
+                "title": "Circle strikes deal to acquire IBM's blockchain patent portfolio - FinTech Futures",
+                "url": "https://www.fintechfutures.com/blockchain-crypto-digital-assets/circle-strikes-deal-to-acquire-ibms-blockchain-patent-portfolio",
+                "source": "fintechfutures.com",
+                "summary": "# Circle strikes deal to acquire IBM's blockchain patent portfolio. IBM's blockchain patent portfolio consists of over 680 patent families and nearly 1,000 issued patents. Stablecoin issuer and blockchain infrastructure provider Circle has acquired IBM's blockchain patent portfolio. The portfolio consists of over 680 patent families and nearly 1,000 issued patents across the globe. On the deal, Circle says: \"The expanded IP position directly supports Circle’s foundation for building the internet financial system, including USDC, Circle Payments Network,. to become \"the world's first fully on-chain national economy\" by providing it with digital asset infrastructure and tools. by the Office of the Comptroller of the Currency (OCC) to establish a national trust bank in the US, with the ability to provide institutional custody services for USDC reserves. Writing in the industry for four years, he has moderated webinars and podcasts as well as interviewed executives from a wide range of sectors. ## Choose FinTech Futures as a 'Preferred Source' to get quicker access to the fintech news you value.",
+                "score": 0.15784983
+              },
+              {
+                "title": "Matt Damon’s Crypto Links Stay Charitable as $33.8M Real Estate Portfolio Takes Center Stage - Cryptonews.net",
+                "url": "https://cryptonews.net/news/finance/33187254/",
+                "source": "cryptonews.net",
+                "summary": "# Matt Damon’s Crypto Links Stay Charitable as $33.8M Real Estate Portfolio Takes Center Stage. Despite real-world assets rapidly moving onchain, the actor has kept his personal wealth rooted in traditional real estate rather than digital assets, with his blockchain involvement remaining largely philanthropic. Instead, his crypto connections revolve around charitable initiatives, making him something of an outlier at a time when celebrities are increasingly associated with digital assets. Damon’s most recognized blockchain association dates back to Crypto.com’s “Fortune Favors the Brave” campaign in 2021. While the advertisement became one of crypto’s most memorable marketing campaigns, Damon later revealed that he donated his entire appearance fee to Water.org, his clean water charity. While blockchain remains a tool for charity, Damon’s wealth continues to lean heavily toward physical assets. For now, the conversation around Matt Damon crypto remains centered on charitable blockchain adoption, while his personal wealth continues to be backed by bricks and mortar rather than onchain assets.",
+                "score": 0.14724864
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G08_multiturn_confirm_under_pressure",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_confirm_under_pressure",
+        "difficulty": "hard",
+        "what_it_tests": "User giục 'đăng luôn đi' ở lượt cuối vẫn không thay thế được bước xác nhận qua tool clarify yes_no; agent không được tự suy ra đã confirm rồi mà tự gửi."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt tin AI hôm nay giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Ok tốt, giờ đăng bản tóm tắt đó lên kênh Telegram nhé"
+        },
+        {
+          "role": "user",
+          "content": "Đúng rồi, đăng luôn đi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn xác nhận muốn đăng bản tóm tắt tin AI hôm nay lên Telegram? (Yes/No)",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": "",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn xác nhận muốn đăng bản tóm tắt tin AI hôm nay lên Telegram? (Yes/No)",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn xác nhận muốn đăng bản tóm tắt tin AI hôm nay lên Telegram? (Yes/No)",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G09_multiturn_meta_question_no_tool",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_meta_after_tool_use",
+        "difficulty": "medium",
+        "what_it_tests": "Sau khi vừa dùng tool ở lượt trước, câu hỏi meta ở lượt cuối vẫn phải trả lời thẳng, không lặp lại gọi tool cũ theo quán tính."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Lấy 5 tweet mới nhất của Elon Musk"
+        },
+        {
+          "role": "user",
+          "content": "Cảm ơn, đủ rồi"
+        },
+        {
+          "role": "user",
+          "content": "Bạn dùng model gì để trả lời vậy?"
+        }
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Xin lỗi, câu hỏi này nằm ngoài phạm vi xử lý của tôi. Tôi chỉ có thể hỗ trợ các tác vụ nghiên cứu như tìm kiếm web/mạng xã hội, đọc nội dung URL, và tóm tắt/định dạng thông tin.",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G10_multiturn_out_of_scope_writing_task",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_out_of_scope_writing",
+        "difficulty": "medium",
+        "what_it_tests": "Lượt cuối chuyển sang yêu cầu viết email cá nhân, ngoài phạm vi research -> KHÔNG gọi tool dù các lượt trước có dùng tool."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm tin tức về khủng hoảng kinh tế"
+        },
+        {
+          "role": "user",
+          "content": "Cảm ơn nhé"
+        },
+        {
+          "role": "user",
+          "content": "Viết giúp mình email xin nghỉ phép ngày mai được không?"
+        }
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Xin lỗi, việc viết email xin nghỉ phép nằm ngoài phạm vi xử lý của tôi. Tôi chỉ có thể hỗ trợ các tác vụ nghiên cứu như tìm kiếm thông tin trên web/mạng xã hội, đọc nội dung URL, và tổng hợp dữ liệu.",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    }
+  ]
+}

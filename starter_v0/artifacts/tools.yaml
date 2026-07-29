@@ -28,21 +28,21 @@ tools:
       required: [screenname]
 
   - name: social_search
-    description: "Tìm trên mạng xã hội."
+    description: "Tìm bài đăng trên mạng xã hội (Twitter) theo chủ đề. Chỉ gọi khi user nhắc rõ Twitter/mạng xã hội/tweet, hoặc yêu cầu cả web lẫn mạng xã hội."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Từ khóa"}
+        query: {type: string, default: "", description: "Từ khóa NGẮN GỌN (1-3 từ, chủ đề cốt lõi), không phải nguyên câu hỏi."}
         search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Cách sắp xếp"}
         limit: {type: integer, default: 5, description: "Số lượng"}
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: "Tra cứu thông tin trên web (không phải mạng xã hội). Dùng cho tin tức/chủ đề chung. Nếu user chỉ hỏi tin tức/chủ đề trên web mà không nhắc Twitter/mạng xã hội, chỉ gọi tool này, KHÔNG gọi thêm social_search."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
+        query: {type: string, default: "", description: "Từ khóa NGẮN GỌN (1-3 từ, chủ đề cốt lõi), không phải nguyên câu hỏi. Ví dụ: user hỏi 'tin tức AI nổi bật hôm nay' -> query='AI', không phải 'tin tức AI nổi bật hôm nay'."}
         topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
         timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
         max_results: {type: integer, default: 5, description: "Số kết quả"}

@@ -1,7 +1,108 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
+  "description": "10 case do nhom tu viet: 5 single-turn dung query va 5 multi-turn dung turns. Bao phu du 6 failure_type: wrong_tool, wrong_arg_value, wrong_boundary, unnecessary_tool, out_of_scope, missing_info.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_search_type_and_limit_combo",
+      "phase": "B", "suite": "group",
+      "query": "Cho mình xem 3 tweet nổi bật nhất về Bitcoin",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "social_search", "args": {"query": "Bitcoin", "search_type": "Top", "limit": 3}}]},
+      "metadata": {"skill": "arg_search_type_and_limit_combo", "difficulty": "hard", "what_it_tests": "Trích đồng thời 2 arg trong 1 câu: 'nổi bật' -> search_type=Top, '3 tweet' -> limit=3."}
+    },
+    {
+      "id": "G02_missing_url_vague_reference",
+      "phase": "B", "suite": "group",
+      "query": "Đọc giúp mình bài viết kia rồi tóm tắt",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "clarify_missing_url_vague", "difficulty": "medium", "what_it_tests": "'bài viết kia' không kèm link cụ thể -> phải hỏi lại URL, không được đoán/bịa link."}
+    },
+    {
+      "id": "G03_confirm_before_send_casual",
+      "phase": "B", "suite": "group",
+      "query": "Bản tin tuần này ổn rồi, đăng lên Telegram cho mọi người xem luôn nhé",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "confirm_before_send_casual_phrasing", "difficulty": "medium", "what_it_tests": "Yêu cầu gửi bằng giọng thúc giục ('luôn nhé') vẫn phải qua clarify yes_no trước, không tự gửi."}
+    },
+    {
+      "id": "G04_out_of_scope_translation",
+      "phase": "B", "suite": "group",
+      "query": "Bạn dịch giúp mình câu này sang tiếng Anh: 'Hôm nay trời đẹp quá'",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope_translation", "difficulty": "easy", "what_it_tests": "Yêu cầu dịch thuật ngoài phạm vi research -> KHÔNG gọi tool."}
+    },
+    {
+      "id": "G05_fetch_url_inline_casual",
+      "phase": "B", "suite": "group",
+      "query": "Có tin gì mới trên https://openai.com/news không, xem giúp mình",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "fetch", "args": {"url": "https://openai.com/news"}}]},
+      "metadata": {"skill": "routing_fetch_inline_url", "difficulty": "easy", "what_it_tests": "URL nằm giữa câu hỏi tự nhiên (không phải câu lệnh trực tiếp) -> vẫn phải nhận ra và gọi fetch, không lookup."}
+    },
+    {
+      "id": "G06_multiturn_topic_and_timeframe_carryover",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin công nghệ mới nhất"},
+        {"role": "user", "content": "Thật ra mình muốn tin về SpaceX"},
+        {"role": "user", "content": "Cho mình luôn khung thời gian trong tháng này"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "SpaceX", "topic": "news", "timeframe": "month"}}]},
+      "metadata": {"skill": "multiturn_topic_switch_plus_new_timeframe", "difficulty": "hard", "what_it_tests": "3 turns: đổi chủ đề công nghệ->SpaceX ở lượt 2, thêm timeframe=month ở lượt 3, phải gộp đúng cả hai vào 1 tool call cuối."}
+    },
+    {
+      "id": "G07_multiturn_switch_fetch_to_lookup",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Đọc giúp mình bài này: https://vnexpress.net/ai"},
+        {"role": "user", "content": "À thôi, mình muốn tìm thêm tin liên quan trên web luôn"},
+        {"role": "user", "content": "Tìm tin về blockchain nhé, không cần đọc link kia nữa"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "blockchain"}}]},
+      "metadata": {"skill": "multiturn_switch_fetch_to_lookup", "difficulty": "hard", "what_it_tests": "User đổi ý từ đọc URL cụ thể sang tìm web theo chủ đề -> phải chuyển tool, không gọi fetch link cũ đã bị hủy."}
+    },
+    {
+      "id": "G08_multiturn_confirm_under_pressure",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt tin AI hôm nay giúp mình"},
+        {"role": "user", "content": "Ok tốt, giờ đăng bản tóm tắt đó lên kênh Telegram nhé"},
+        {"role": "user", "content": "Đúng rồi, đăng luôn đi"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "multiturn_confirm_under_pressure", "difficulty": "hard", "what_it_tests": "User giục 'đăng luôn đi' ở lượt cuối vẫn không thay thế được bước xác nhận qua tool clarify yes_no; agent không được tự suy ra đã confirm rồi mà tự gửi."}
+    },
+    {
+      "id": "G09_multiturn_meta_question_no_tool",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Lấy 5 tweet mới nhất của Elon Musk"},
+        {"role": "user", "content": "Cảm ơn, đủ rồi"},
+        {"role": "user", "content": "Bạn dùng model gì để trả lời vậy?"}
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"skill": "multiturn_meta_after_tool_use", "difficulty": "medium", "what_it_tests": "Sau khi vừa dùng tool ở lượt trước, câu hỏi meta ở lượt cuối vẫn phải trả lời thẳng, không lặp lại gọi tool cũ theo quán tính."}
+    },
+    {
+      "id": "G10_multiturn_out_of_scope_writing_task",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin tức về khủng hoảng kinh tế"},
+        {"role": "user", "content": "Cảm ơn nhé"},
+        {"role": "user", "content": "Viết giúp mình email xin nghỉ phép ngày mai được không?"}
+      ],
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "multiturn_out_of_scope_writing", "difficulty": "medium", "what_it_tests": "Lượt cuối chuyển sang yêu cầu viết email cá nhân, ngoài phạm vi research -> KHÔNG gọi tool dù các lượt trước có dùng tool."}
+    }
+  ]
 }
