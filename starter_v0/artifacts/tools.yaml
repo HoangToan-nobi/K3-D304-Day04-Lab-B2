@@ -119,6 +119,46 @@ tools:
         max_items: {type: integer, default: 8, description: "Số item ưu tiên tối đa trả về"}
       required: [items]
 
+  - name: citation_audit
+    description: "Kiểm tra item đã thu thập có đủ URL/source/title-or-summary để trích dẫn trong report/digest hay chưa. Chỉ dùng sau khi đã có items; không dùng để tìm kiếm, đọc URL hoặc xác minh fact mới."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item đã thu thập từ tool khác"
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+      required: [items]
+
+  - name: brief_builder
+    description: "Tạo brief ngắn cho demo/report từ các item đã có. Chỉ dùng sau lookup/social_search/timeline/fetch/policy/papers; không dùng để tìm kiếm hoặc đọc nguồn mới."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item đã thu thập từ tool khác"
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+              section: {type: string}
+        audience: {type: string, default: "demo reviewers", description: "Người đọc brief"}
+        objective: {type: string, default: "summarize the most relevant findings", description: "Mục tiêu brief"}
+        max_items: {type: integer, default: 5, description: "Số item tối đa đưa vào brief"}
+      required: [items]
+
   # ---------------- Bonus tools ----------------
   - name: send
     description: "Gửi một đoạn văn bản đi."

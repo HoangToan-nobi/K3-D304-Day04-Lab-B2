@@ -6,7 +6,7 @@
 
 ## Team
 
-- Team:
+- Team: B2 Research Agent
 - Members:
   - Đỗ Thái Dương (2A202601331) - Role 1: Agent + eval lead
   - Hoàng Sỹ Toàn (2A202601273) - Role 2: Tool/backend/API
@@ -37,6 +37,8 @@ URL: http://localhost:8501
 | format | trình bày items đã có thành markdown digest | không |
 | dedupe_sources | loại item trùng trước khi format | có |
 | source_triage | chấm điểm ưu tiên và gắn cờ rủi ro nguồn | có |
+| citation_audit | kiểm tra item có đủ URL/source để citation-ready | có |
+| brief_builder | tạo brief ngắn cho demo/report từ items đã có | có |
 | policy | tìm trong company policy nội bộ | không |
 | papers | tìm paper trên arXiv | không |
 | paper_text | trích text từ paper arXiv | không |
@@ -127,7 +129,11 @@ UI is core deliverable, not bonus. Do not list it here.
 |---|---|---|---|
 | Must-have: tool mới đầu tiên | tools/dedupe_sources/TOOL.md, tools/dedupe_sources/tool.py | Smoke test pass: input_count=3, output_count=2, removed_count=1 | Local only, no secret, no side effect |
 | Additional local tool | tools/source_triage/TOOL.md, tools/source_triage/tool.py | Smoke test pass: ranks items and returns warnings | Triage score is heuristic, not factual verification |
+| Bonus tool | tools/citation_audit/TOOL.md, tools/citation_audit/tool.py | Smoke test pass: flags missing URL/source/title-or-summary | Local audit only, not factual verification |
+| Bonus tool | tools/brief_builder/TOOL.md, tools/brief_builder/tool.py | Smoke test pass: builds short demo/report brief from existing items | Local formatter only, no new evidence collection |
 | Provider/API smoke tests | terminal evidence | DeepSeek preflight, lookup, fetch, timeline, social_search pass | API quota/rate limits still need manual monitoring |
+
+Bonus claim: UI bắt buộc đã có (`app.py`) và team tự viết 4 local tools mới: `dedupe_sources`, `source_triage`, `citation_audit`, `brief_builder`.
 
 ## B6. Reflection
 

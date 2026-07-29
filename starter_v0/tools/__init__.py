@@ -8,6 +8,8 @@ import yaml
 # Folder names are intentionally vague to match the tool names students see.
 # The imported function names are the underlying implementations (unchanged).
 from .clarify.tool import ask_user
+from .brief_builder.tool import brief_builder
+from .citation_audit.tool import citation_audit
 from .dedupe_sources.tool import dedupe_sources
 from .papers.tool import arxiv_search
 from .paper_text.tool import get_arxiv_paper_text
@@ -28,6 +30,8 @@ from .source_triage.tool import source_triage
 # Otherwise the eval raises "not declared in tools.yaml" or scores every call as a name mismatch.
 TOOL_FUNCTIONS = {
     "clarify": ask_user,
+    "brief_builder": brief_builder,
+    "citation_audit": citation_audit,
     "timeline": get_user_tweets,
     "social_search": search_tweets,
     "lookup": web_search,
