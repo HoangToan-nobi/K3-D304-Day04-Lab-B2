@@ -273,6 +273,59 @@ header[data-testid="stHeader"] {
   background: var(--surface-muted);
 }
 
+.tool-step {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  padding: 11px 13px;
+  margin: 8px 0;
+}
+
+.tool-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.tool-step-title {
+  color: var(--text);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tool-status {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tool-status-ok {
+  color: var(--success);
+  background: oklch(24% 0.04 154);
+}
+
+.tool-status-error {
+  color: var(--danger);
+  background: oklch(24% 0.04 28);
+}
+
+.tool-status-wait {
+  color: var(--warning);
+  background: oklch(24% 0.04 78);
+}
+
+.tool-summary {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 760px) {
   .block-container {
     padding: 1rem 0.75rem 1.75rem;
@@ -295,6 +348,45 @@ def _json(value: Any, max_chars: int = 12000) -> str:
     if len(text) > max_chars:
         return text[:max_chars] + "\n...<truncated>"
     return text
+
+
+def _result_status(result: Any) -> tuple[str, str]:
+    if isinstance(result, dict) and result.get("awaiting_user"):
+        return "waiting", "tool-status-wait"
+    if isinstance(result, dict) and result.get("error"):
+        return "error", "tool-status-error"
+    return "ok", "tool-status-ok"
+
+
+def _result_summary(result: Any) -> str:
+    if not isinstance(result, dict):
+        return f"Returned {type(result).__name__}."
+    if result.get("awaiting_user"):
+        return f"Paused for user input: {result.get('question', 'clarification needed')}"
+    if result.get("error"):
+        return f"{result.get('error')}: {result.get('message', 'tool returned an error')}"
+
+    parts: list[str] = []
+    if "item_count" in result:
+        parts.append(f"item_count={result.get('item_count')}")
+    if "output_count" in result:
+        parts.append(f"output_count={result.get('output_count')}")
+    if "removed_count" in result:
+        parts.append(f"removed_count={result.get('removed_count')}")
+    if "citation_ready_count" in result:
+        parts.append(f"citation_ready={result.get('citation_ready_count')}")
+    if "included_count" in result:
+        parts.append(f"included={result.get('included_count')}")
+    if "chars_returned" in result:
+        parts.append(f"chars_returned={result.get('chars_returned')}")
+    if result.get("markdown"):
+        parts.append(f"markdown_chars={len(str(result.get('markdown')))}")
+    if result.get("items") is not None and "item_count" not in result:
+        items = result.get("items") or []
+        parts.append(f"items={len(items)}")
+    if result.get("warnings"):
+        parts.append(f"warnings={len(result.get('warnings') or [])}")
+    return ", ".join(parts) if parts else "Tool completed."
 
 
 def _new_transcript(version: str, provider_name: str, model: str | None, history_window: int, max_tool_rounds: int) -> dict[str, Any]:
@@ -345,12 +437,35 @@ def _render_turn_trace(turn: dict[str, Any], *, expanded: bool = False) -> None:
                 st.markdown("**Assistant routing note**")
                 st.write(round_record.get("assistant_text"))
 
+            st.markdown("**Execution timeline**")
+            tool_results = round_record.get("tool_results", [])
+            for index, call in enumerate(round_record.get("tool_calls", []), start=1):
+                event = tool_results[index - 1] if index - 1 < len(tool_results) else {}
+                result = event.get("result", {}) if isinstance(event, dict) else {}
+                status, status_class = _result_status(result)
+                tool_name = call.get("name") or event.get("tool") or "unknown_tool"
+                st.markdown(
+                    f"""
+                    <div class="tool-step">
+                      <div class="tool-step-head">
+                        <div class="tool-step-title">{index}. {tool_name}</div>
+                        <div class="tool-status {status_class}">{status}</div>
+                      </div>
+                      <div class="tool-summary">Args: <code>{_json(call.get("args", {}), max_chars=900)}</code></div>
+                      <div class="tool-summary">Result: {_result_summary(result)}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            if not round_record.get("tool_calls"):
+                st.caption("No tool call in this round; the assistant answered directly.")
+
             calls_col, results_col = st.columns(2)
             with calls_col:
-                st.markdown("**Tool calls**")
+                st.markdown("**Raw tool calls**")
                 st.code(_json(round_record.get("tool_calls", [])), language="json")
             with results_col:
-                st.markdown("**Tool results**")
+                st.markdown("**Raw tool results**")
                 st.code(_json(round_record.get("tool_results", [])), language="json")
 
 
