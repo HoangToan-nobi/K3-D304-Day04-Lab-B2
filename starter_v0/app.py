@@ -27,6 +27,205 @@ load_lab_env(ROOT)
 TRANSCRIPTS_DIR = ROOT / "transcripts"
 
 
+CSS = """
+<style>
+:root {
+  --surface: oklch(98% 0.006 232);
+  --surface-raised: oklch(99% 0.004 232);
+  --surface-muted: oklch(94% 0.008 232);
+  --line: oklch(87% 0.014 232);
+  --line-strong: oklch(74% 0.022 232);
+  --text: oklch(24% 0.026 232);
+  --text-muted: oklch(48% 0.026 232);
+  --accent: oklch(49% 0.118 224);
+  --accent-soft: oklch(92% 0.035 224);
+  --success: oklch(50% 0.11 154);
+  --warning: oklch(63% 0.13 70);
+  --danger: oklch(55% 0.14 28);
+}
+
+.stApp {
+  background: var(--surface);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+section[data-testid="stSidebar"] {
+  background: var(--surface-muted);
+  border-right: 1px solid var(--line);
+}
+
+section[data-testid="stSidebar"] * {
+  font-size: 0.92rem;
+}
+
+.block-container {
+  max-width: 1220px;
+  padding-top: 1.4rem;
+  padding-bottom: 2.25rem;
+}
+
+h1, h2, h3 {
+  color: var(--text);
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: 1.65rem;
+  line-height: 1.2;
+  font-weight: 720;
+  margin: 0;
+}
+
+.agent-topbar {
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  border-radius: 8px;
+  padding: 18px 20px 16px;
+  margin-bottom: 14px;
+}
+
+.agent-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.agent-subtitle {
+  max-width: 68ch;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--line);
+  margin: 14px 0 22px;
+}
+
+.status-cell {
+  min-width: 0;
+  background: var(--surface-raised);
+  padding: 11px 13px;
+}
+
+.status-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.status-value {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+.trace-empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  padding: 22px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.turn-meta {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin: 4px 0 8px;
+}
+
+.tool-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 650;
+  margin: 0 5px 5px 0;
+}
+
+.transcript-path {
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+div[data-testid="stChatMessage"] {
+  border-radius: 8px;
+}
+
+div[data-testid="stExpander"] {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+div[data-testid="stCodeBlock"] {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.stButton > button,
+.stDownloadButton > button {
+  min-height: 42px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  font-weight: 650;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.stButton > button:focus-visible,
+.stDownloadButton > button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .block-container {
+    padding: 1rem 0.75rem 1.75rem;
+  }
+
+  .agent-title-row {
+    display: block;
+  }
+
+  .status-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+"""
+
+
 def _json(value: Any, max_chars: int = 12000) -> str:
     text = json.dumps(value, ensure_ascii=False, indent=2, default=str)
     if len(text) > max_chars:
@@ -67,19 +266,18 @@ def _reset_session() -> None:
     st.session_state.transcript = None
 
 
-st.set_page_config(page_title="Research Agent", page_icon="🔎", layout="wide")
-st.title("Research Agent")
+st.set_page_config(page_title="Research Agent", layout="wide")
+st.markdown(CSS, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.subheader("Run")
+    st.subheader("Run Settings")
     provider_name = st.selectbox("Provider", ["deepseek", "openrouter", "openai", "anthropic", "gemini"], index=0)
     version = st.text_input("Version", value="v3")
     model = st.text_input("Model override", value="")
     history_window = st.number_input("History window", min_value=0, max_value=10, value=5)
     max_tool_rounds = st.number_input("Max tool rounds", min_value=1, max_value=8, value=4)
-    if st.button("New transcript", use_container_width=True):
+    if st.button("Start new transcript", use_container_width=True):
         _reset_session()
-    st.caption("Transcript is saved after each turn.")
 
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -95,26 +293,83 @@ tool_declarations = load_tool_declarations(tools_path)
 openai_tools = to_openai_tools(tool_declarations)
 artifact_version = build_artifact_version(version, system_prompt_path, tools_path)
 
-metric_cols = st.columns(4)
-metric_cols[0].metric("Provider", provider_name)
-metric_cols[1].metric("Model", model or getattr(make_provider(provider_name), "default_model", "default"))
-metric_cols[2].metric("Tools", str(len(tool_declarations)))
-metric_cols[3].metric("Version", artifact_version.artifact_version)
+selected_model = model or getattr(make_provider(provider_name), "default_model", "default")
 
-for turn in st.session_state.turns:
-    with st.chat_message("user"):
-        st.write(turn["user"])
-    with st.chat_message("assistant"):
-        st.write(turn.get("assistant_text") or turn.get("error") or "")
+st.markdown(
+    f"""
+    <div class="agent-topbar">
+      <div class="agent-title-row">
+        <div>
+          <h1>Research Agent Console</h1>
+          <div class="agent-subtitle">Live agent surface for requests, final responses, tool traces, run identity, and saved transcripts.</div>
+        </div>
+      </div>
+    </div>
+    <div class="status-strip">
+      <div class="status-cell"><div class="status-label">Provider</div><div class="status-value">{provider_name}</div></div>
+      <div class="status-cell"><div class="status-label">Model</div><div class="status-value">{selected_model}</div></div>
+      <div class="status-cell"><div class="status-label">Tools</div><div class="status-value">{len(tool_declarations)}</div></div>
+      <div class="status-cell"><div class="status-label">Artifact</div><div class="status-value">{artifact_version.artifact_version}</div></div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+chat_tab, trace_tab, transcript_tab = st.tabs(["Chat", "Trace", "Transcript"])
+
+with chat_tab:
+    if not st.session_state.turns:
+        st.markdown('<div class="trace-empty">No turns yet. Run a scenario to create trace evidence.</div>', unsafe_allow_html=True)
+
+    for turn in st.session_state.turns:
+        with st.chat_message("user"):
+            st.write(turn["user"])
+        with st.chat_message("assistant"):
+            st.markdown(f'<div class="turn-meta">Status: {turn.get("status", "unknown")}</div>', unsafe_allow_html=True)
+            st.write(turn.get("assistant_text") or turn.get("error") or "")
+            tool_names = [
+                call.get("name", "")
+                for round_record in turn.get("rounds", [])
+                for call in round_record.get("tool_calls", [])
+            ]
+            if tool_names:
+                pills = "".join(f'<span class="tool-pill">{name}</span>' for name in tool_names)
+                st.markdown(pills, unsafe_allow_html=True)
+
+with trace_tab:
+    if not st.session_state.turns:
+        st.markdown('<div class="trace-empty">No trace recorded.</div>', unsafe_allow_html=True)
+
+    for turn in st.session_state.turns:
+        st.markdown(f"#### Turn {turn['turn_index']}")
+        st.caption(turn["user"])
         for round_record in turn.get("rounds", []):
-            label = f"Round {round_record.get('round')}: {len(round_record.get('tool_calls', []))} tool call(s)"
-            with st.expander(label):
-                st.markdown("**Tool calls**")
-                st.code(_json(round_record.get("tool_calls", [])), language="json")
-                st.markdown("**Tool results**")
-                st.code(_json(round_record.get("tool_results", [])), language="json")
+            call_count = len(round_record.get("tool_calls", []))
+            result_count = len(round_record.get("tool_results", []))
+            label = f"Round {round_record.get('round')} | calls {call_count} | results {result_count}"
+            with st.expander(label, expanded=bool(call_count)):
+                calls_col, results_col = st.columns(2)
+                with calls_col:
+                    st.markdown("**Tool calls**")
+                    st.code(_json(round_record.get("tool_calls", [])), language="json")
+                with results_col:
+                    st.markdown("**Tool results**")
+                    st.code(_json(round_record.get("tool_results", [])), language="json")
 
-prompt = st.chat_input("Ask for web news, tweets, URL summaries, or digests")
+with transcript_tab:
+    if st.session_state.transcript:
+        path = _transcript_path(st.session_state.transcript)
+        st.markdown(f'<div class="transcript-path">{path}</div>', unsafe_allow_html=True)
+        st.code(_json({
+            "artifact_version": st.session_state.transcript.get("artifact_version"),
+            "prompt_hash": st.session_state.transcript.get("prompt_hash"),
+            "tools_hash": st.session_state.transcript.get("tools_hash"),
+            "turn_count": len(st.session_state.transcript.get("turns", [])),
+        }), language="json")
+    else:
+        st.markdown('<div class="trace-empty">Transcript will appear after the first turn.</div>', unsafe_allow_html=True)
+
+prompt = st.chat_input("Enter research request")
 if prompt:
     if st.session_state.transcript is None:
         st.session_state.transcript = _new_transcript(
@@ -141,7 +396,7 @@ if prompt:
         {"role": "user", "content": prompt},
     ]
 
-    with st.spinner("Running agent and tools..."):
+    with st.spinner("Running agent and tools"):
         try:
             provider = make_provider(provider_name)
             result = run_model_tool_loop(
@@ -167,16 +422,3 @@ if prompt:
     path = _transcript_path(st.session_state.transcript)
     write_transcript(path, st.session_state.transcript)
     st.rerun()
-
-st.divider()
-if st.session_state.transcript:
-    path = _transcript_path(st.session_state.transcript)
-    st.markdown(f"**Transcript:** `{path}`")
-    st.code(_json({
-        "artifact_version": st.session_state.transcript.get("artifact_version"),
-        "prompt_hash": st.session_state.transcript.get("prompt_hash"),
-        "tools_hash": st.session_state.transcript.get("tools_hash"),
-        "turn_count": len(st.session_state.transcript.get("turns", [])),
-    }), language="json")
-else:
-    st.markdown("**Transcript:** not started yet")
